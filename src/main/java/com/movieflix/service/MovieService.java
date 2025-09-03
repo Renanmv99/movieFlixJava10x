@@ -6,6 +6,7 @@ import com.movieflix.entity.Streaming;
 import com.movieflix.repository.MovieRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,37 @@ public class MovieService {
 
     public Optional<Movie> findById(Long id){
         return movieRepository.findById(id);
+    }
+
+    public Optional<Movie> update(Long movieId, Movie updateMovie){
+        Optional<Movie> optMovie = movieRepository.findById(movieId);
+        if (optMovie.isPresent()){
+
+            List<Category> categories = this.findCategories(updateMovie.getCategories());
+            List<Streaming> streamings = this.findStreamings(updateMovie.getStreamings());
+
+
+            Movie movie = optMovie.get();
+            movie.setTitle(updateMovie.getTitle());
+            movie.setDescription((updateMovie.getDescription()));
+            movie.setReleaseDate(updateMovie.getReleaseDate());
+            movie.setRating(updateMovie.getRating());
+
+            movie.getCategories().clear();
+            movie.getCategories().addAll(categories);
+
+            movie.getStreamings().clear();
+            movie.getStreamings().addAll(streamings);
+
+            movieRepository.save(movie);
+            return Optional.of(movie);
+        }
+
+        return Optional.empty();
+    }
+
+    public void delete(Long id){
+        movieRepository.deleteById(id);
     }
 
     private List<Category> findCategories(List<Category> categories) {
